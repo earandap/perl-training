@@ -1,8 +1,11 @@
  #!/usr/bin/perl
  use v5.18; 
   
-#read input parameter
-my ($MAX) = @ARGV;
+#ask the max number
+say("Please enter a number between 2 and 1000000:");
+
+my $MAX =  <STDIN>;
+
 
 #validate the input
 if($MAX !~ /^\d/ || $MAX > 1000000){
@@ -16,7 +19,7 @@ $i = $j = $count= 0;
 #read begin time
 my $start = time();
 
-#create sieve of Eratosthenes by default all are prime numbers
+#create sieve of Eratosthenes, by default all are prime numbers
 for($i=2; $i < $MAX; $i++){
  $sieve[$i] = 1;
 }
@@ -46,4 +49,5 @@ my $end = time();
 
 print "\n";
 
+#optional line!
 say("done! found $count primes in " . ($end - $start). " seconds");
