@@ -4,41 +4,46 @@
 #read input parameter
 my ($MAX) = @ARGV;
 
-my @prime;
-my @sieve;
-my $i;
-my $j;
-my $index= 0;
+#validate the input
+if($MAX !~ /^\d/ || $MAX > 1000000){
+   die ("bad input\n");
+}
+   
+#declare vars
+my (@sieve,$i, $j, $count);
+$i = $j = $count= 0;
+
+#read begin time
+my $start = time();
 
 #create sieve of Eratosthenes by default all are prime numbers
 for($i=2; $i < $MAX; $i++){
  $sieve[$i] = 1;
 }
 
+#processing numbers
 for($i = 2; $i < $MAX; $i++){
- say $MAX;
- say $i;
+ 
  #find next prime
- while($sieve[$i]==0 && $i<$MAX){
-  say("no is prime: $i");
+ while($sieve[$i]==0 && $i<$MAX){  
   $i++;
  }
+ 
  if($i < $MAX){
- #prime found!
- say("found prime!: $i");
- $prime[$index]=$i; 
- #say @prime;
- for($j=2*$i;$j<$MAX; $j+=$i){
-  #mark multiples of $j
-  $sieve[$j]=0;
+  #found prime!
+  print "$i ";
+    
+  for($j=2*$i;$j<$MAX; $j+=$i){
+   #mark multiples of $j
+   $sieve[$j]=0;
+  }
+  $count++;
  }
-
- $index++;
-}
 }
 
+#read end time
+my $end = time();
 
-say @sieve;
-say @prime;
+print "\n";
 
-
+say("done! found $count primes in " . ($end - $start). " seconds");
