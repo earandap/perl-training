@@ -44,7 +44,6 @@ sub words2num {
    my @parts = split(" ",$_);
    my $last_multiplier = 1;
    my $multiplier = 1;
-   say @parts;
    foreach my $w (@parts){
       $multiplier = $multiply{$w} || 1;   
       if($multiplier > $last_multiplier){
@@ -61,23 +60,16 @@ sub words2num {
     }
     return $result + $tmp;
 }
+my %output;
+open(numbers,"<:utf8", "numbers.in") || die "Can't open numbers.in file: $!\n";
 
-sub sort {
-
-} 
-
-while(<>)
+while(<numbers>)
 {
- say words2num($_);
+	chomp $_;
+	$output{$_} = words2num($_);
 }
-#open(numbers,"<:utf8", "numbers.in") || die "Can't open numbers.in file: $!\n";
-#my %output;
 
-#while(my $line = <numbers>){
-# $words2num($line); 
-#
-#}
+foreach(sort {$output{$b}<=>$output{$a}} keys %output){
+	say $_;
 
- 
-
-
+}
