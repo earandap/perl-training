@@ -29,12 +29,10 @@ sub shortest_path {
 		
     }
 	@distances = grep {$_ > 0 } @distances;
-    my @sorted_distances = sort @distances;
-	foreach my $dis (@sorted_distances){
-		if($dis != -1){
-			return $dis;
-		}
-	}
+    if(scalar @distances > 0){
+        return min @distances;
+    }   
+	
 	return -1;
 		
 }
