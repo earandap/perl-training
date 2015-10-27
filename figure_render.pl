@@ -5,17 +5,19 @@ use v5.18;
 
 #######################FIGURE####################
 package Figure;
-
+use Data::Dumper;
 sub new {
     my $class = shift;
+    print Dumper \@_;
     my %args = @_;
+    print Dumper \%args;
     my $self = bless {}, $class;
     
     #color of figure
     $self->{"color"} = $args{"color"};
     
-    #coordenates of figure
-    $self->{"coordenates"} = $args{"coordenates"};
+    #coordinates of figure
+    $self->{"coordinates"} = $args{"coordinates"};
     
     return $self;
 }
@@ -37,7 +39,6 @@ sub draw{
 1;
 ####################POINT######################
 package Point;
-
 sub new {
     my $class = shift;
     my %args = @_;
@@ -50,17 +51,27 @@ sub get_y {
     return shift->{"y"};
 }
 
+sub distance {
+    
+    my $self = shift;
+    my ( $point ) = @_;
+    
+    return sqrt (($self->{"x"} - $point->{"x"})**2 + ($self->{"y"}-$point->{"y"})**2); 
+}
 1;
 
 ####################TRIANGLE###################
 package Rectangle;
 
+use Data::Dumper;
+
 our @ISA = qw (Figure);
 
-sub new {
-    my $class = shift;
-    my %args = @_;
-    return  $class->SUPER::new( color => $args{"color"} || "Red" );
+sub area {
+    my $self = shift;
+    my @coordinates = $self->{"coordinates"};
+    #print Dumper \@coordinates;
+
 }
 
 1;
@@ -88,6 +99,8 @@ sub new {
 1;
 
 package main;
+use Data::Dumper;
 
-say "hola mundo!";
-   
+my @coordinates = (Point->new(x=>1, y=>4),Point->new(x=>5, y=>4),Point->new(x=>5, y=>1),Point->new(x=>1, y=>1));
+my $rectangle = Rectangle->new(color => "Red",coordinates => @:coordinates);
+print Dumper \$rectangle;
