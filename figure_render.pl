@@ -70,9 +70,8 @@ sub distance {
 
 ####################RECTANGLE#################
 package Rectangle;
-
+use Term::ANSIColor;
 use Data::Dumper;
-use GD::Simple;
 
 our @ISA = qw (Figure);
 sub new {
@@ -93,12 +92,17 @@ sub area {
 sub draw {
     my $self = shift;
     my @coordinates = @{$self->{"coordinates"}};
-    my $img = GD::Simple->new($coordinates[0]->distance($coordinates[1]) + 5,$coordinates[1]->distance($coordinates[2])+5);
-    $img->bgcolor($self->{"color"});
-    $img->rectangle($coordinates[0]->{"x"}+5,$coordinates[0]->{"y"}+5, $coordinates[2]->{"x"}+5, $coordinates[2]->{"y"}+5);
-    open my $out, '>', 'img.png' or die;
-    binmode $out;
-    print $out $img->png;
+    my $scala = 3;
+    my $a = $coordinates[0]->distance($coordinates[1]);
+    my $b = $coordinates[1]->distance($coordinates[2]);
+    print color ($self->{"color"});
+    for my $x (0.. $b*$scala - 1){
+        for my $y (0..$a*$scala - 1){
+            print "..";
+        }
+        print "\n";
+    }
+    print color("white");
 }
 
 
@@ -114,19 +118,20 @@ sub new {
     my %args = @_;
     return $class->SUPER::new(color=>$args{"color"} || "Blue", coordinates => $args{"coordinates"});
 }
+
 1;
 ##################CIRCLE#######################
 package Circle;
 our @ISA = qw(Figure);
 use Math::Trig ':pi';
-
+use Term::ANSIColor;
 sub new {
     my $class = shift;
     my %args = @_;
     if(scalar @{$args{"coordinates"}} != 2) {
         die("A circle must have 2 coordinates points \n");
     }
-    return $class->SUPER::new(color => $args{"color"}||"Yelow", coordinates => $args{"coordinates"});
+    return $class->SUPER::new(color => $args{"color"}||"yellow", coordinates => $args{"coordinates"});
 }
 
 sub area {
@@ -134,9 +139,29 @@ sub area {
     my @coordinates = @{$self->{"coordinates"}};
     return pi/4 * ($coordinates[0]->distance($coordinates[1])*2)**2;
 }
+sub draw {
+    my $self = shift;
+    my $scala = 3;
+    my @coordinates = @{$self->{"coordinates"}};
+    my $radio = $coordinates[0]->distance($coordinates[1]);
+    my $a = $radio * $scala;
+    for my $x(0..($radio * 2 * $scala)){
+        for my $y (0..($radio * 2 * $scala )){
+            if((($x-$a)**2 + ($y-$a)**2) < ($radio*$scala)**2){
+                print color($self->{"color"});
+                print "..";
+            }else{
+                print color("white");
+                print "##";
+            }
+        }
+        print "\n";
+    }
+}
 1;
 ###################TRAINGLE####################
 package Triangle;
+use Term::ANSIColor;
 our @ISA = qw(Figure);
 
 sub new {
@@ -145,7 +170,7 @@ sub new {
     if(scalar @{$args{"coordinates"}} != 3) {
         die("A triangle  must have 3 coordinates points \n");
     }
-    return $class->SUPER::new(color => $args{"color"}||"White", coordinates => $args{"coordinates"});
+    return $class->SUPER::new(color => $args{"color"}||"white", coordinates => $args{"coordinates"});
 }
 
 sub area {
@@ -153,7 +178,28 @@ sub area {
     my @coordinates = @{$self->{"coordinates"}};
     return ((sqrt 3) / 4) * $coordinates[0]->distance($coordinates[2])**2;
 }
-         
+
+sub draw {
+    my $self = shift;
+    my @coordinates = @{$self->{"coordinates"}};
+    my $scale = 4;
+    my $side = $coordinates[0]->distance($coordinates[1])* $scale; 
+    my $heigh = (sqrt 3) / 2 * $side;
+    for my $y (0..$heigh-1){
+        for my $x (0..$side-1){
+            if (($side/2 - $y * (sqrt 3) / 3) <= $x && $x <= ($side/2 + $y * (sqrt 3) /3)){
+                print color($self->{"color"});
+                print "..";
+            }
+            else {
+                print color("white");
+                print "  ";
+            }
+        }
+        print "\n";
+    }
+
+}        
 1;
 package main;
 use Data::Dumper;
@@ -161,16 +207,18 @@ use Data::Dumper;
 my @coordinates = (Point->new(x=>1, y=>4),Point->new(x=>5, y=>4),Point->new(x=>5, y=>1),Point->new(x=>1, y=>1));
 my $rectangle = Rectangle->new(coordinates=>\@coordinates);
 say $rectangle->area;
-$rectable->draw;
-print Dumper \$rectangle;
-my @coordinates_circle = (Point->new(x=>3, y=> 3),Point->new(x=>3,y=>1));
+$rectangle->draw;
+#print Dumper \$rectangle;
+my @coordinates_circle = (Point->new(x=>5, y=> 0),Point->new(x=>5,y=>5));
 my $circle = Circle->new(coordinates => \@coordinates_circle);
 say $circle->area;
-print Dumper \$circle;
-my @coordinates_triangle = (Point->new(x=>0, y=>0),Point->new(x=>4,y=>0), Point->new(x=>2,y=>3.4641));
+$circle->draw;
+#print Dumper \$circle;
+my @coordinates_triangle = (Point->new(x=>0, y=>0),Point->new(x=>0,y=>5), Point->new(x=>2,y=>3.4641));
 my $triangle = Triangle->new(coordinates=> \@coordinates_triangle);
 say $triangle->area;
-print Dumper $triangle;
+$triangle->draw
+#print Dumper $triangle;
 
 
 #$rectangle->set_coordinates(@coordinates);
