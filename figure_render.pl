@@ -80,6 +80,7 @@ sub new {
     if(scalar @{$args{"coordinates"}} != 4){
         die("A rectangle must have 4 coordinates points \n");
     }
+    #TODO is a rectangle?
     return $class->SUPER::new(color=>$args{"color"}||"red",coordinates => $args{"coordinates"});
 }
 
@@ -92,18 +93,17 @@ sub area {
 sub draw {
     my $self = shift;
     my @coordinates = @{$self->{"coordinates"}};
-    my $scala = 3;
+    my $scale = 1;
     my $a = $coordinates[0]->distance($coordinates[1]);
     my $b = $coordinates[1]->distance($coordinates[2]);
     print color ($self->{"color"});
-    for my $x (0.. $b*$scala - 1){
-        for my $y (0..$a*$scala - 1){
+    for (my $x = 0; $x < $b*$scale; $x+=0.2){
+       for(my $y = 0 ; $y < $a * $scale; $y+=0.2){
             print "..";
         }
         print "\n";
     }
-    print color("white");
-}
+    print color('reset');}
 
 
 
@@ -116,6 +116,7 @@ our @ISA = qw(Rectangle);
 sub new { 
     my $class =shift; 
     my %args = @_;
+    #TODO is a square?
     return $class->SUPER::new(color=>$args{"color"} || "Blue", coordinates => $args{"coordinates"});
 }
 
@@ -141,13 +142,13 @@ sub area {
 }
 sub draw {
     my $self = shift;
-    my $scala = 3;
+    my $scale = 1;
     my @coordinates = @{$self->{"coordinates"}};
     my $radio = $coordinates[0]->distance($coordinates[1]);
-    my $a = $radio * $scala;
-    for my $x(0..($radio * 2 * $scala)){
-        for my $y (0..($radio * 2 * $scala )){
-            if((($x-$a)**2 + ($y-$a)**2) < ($radio*$scala)**2){
+    my $a = $radio * $scale;
+    for (my $x = 0; $x <= $radio * 2; $x+=0.1){ 
+	 for (my $y = 0; $y <= $radio * 2; $y+= 0.1){
+            if((($x-$a)**2 + ($y-$a)**2) < ($radio*$scale)**2){
                 print color($self->{"color"});
                 print "..";
             }else{
@@ -157,6 +158,7 @@ sub draw {
         }
         print "\n";
     }
+    print color('reset');
 }
 1;
 ###################TRAINGLE####################
@@ -170,6 +172,7 @@ sub new {
     if(scalar @{$args{"coordinates"}} != 3) {
         die("A triangle  must have 3 coordinates points \n");
     }
+    #TODO is a equilateral triangle?;
     return $class->SUPER::new(color => $args{"color"}||"white", coordinates => $args{"coordinates"});
 }
 
@@ -182,11 +185,11 @@ sub area {
 sub draw {
     my $self = shift;
     my @coordinates = @{$self->{"coordinates"}};
-    my $scale = 4;
+    my $scale = 1;
     my $side = $coordinates[0]->distance($coordinates[1])* $scale; 
-    my $heigh = (sqrt 3) / 2 * $side;
-    for my $y (0..$heigh-1){
-        for my $x (0..$side-1){
+    my $height = (sqrt 3) / 2 * $side;
+    for (my $y = 0; $y < $height;$y+=0.2){ 
+        for (my $x  = 0; $x < $side; $x+=0.2 ){
             if (($side/2 - $y * (sqrt 3) / 3) <= $x && $x <= ($side/2 + $y * (sqrt 3) /3)){
                 print color($self->{"color"});
                 print "..";
@@ -198,29 +201,46 @@ sub draw {
         }
         print "\n";
     }
-
+    print color('reset');
 }        
 1;
 package main;
 use Data::Dumper;
 
-my @coordinates = (Point->new(x=>1, y=>4),Point->new(x=>5, y=>4),Point->new(x=>5, y=>1),Point->new(x=>1, y=>1));
-my $rectangle = Rectangle->new(coordinates=>\@coordinates);
-say $rectangle->area;
-$rectangle->draw;
-#print Dumper \$rectangle;
-my @coordinates_circle = (Point->new(x=>5, y=> 0),Point->new(x=>5,y=>5));
-my $circle = Circle->new(coordinates => \@coordinates_circle);
-say $circle->area;
-$circle->draw;
-#print Dumper \$circle;
-my @coordinates_triangle = (Point->new(x=>0, y=>0),Point->new(x=>0,y=>5), Point->new(x=>2,y=>3.4641));
-my $triangle = Triangle->new(coordinates=> \@coordinates_triangle);
-say $triangle->area;
-$triangle->draw
-#print Dumper $triangle;
+sub read_coordinates {
+   my @coordinates;
+   foreach my $coordinate (@_){
+        my ($x, $y) = split ',', $coordinate;
+        push @coordinates, Point->new(x => $x, y => $y);
+   }
+   return @coordinates;
+}
 
 
-#$rectangle->set_coordinates(@coordinates);
-#print Dumper \$rectangle;
-#print Dumper @$rectangle->get_coordinates;
+open("COMMANDS","<:utf8", $ARGV[0]) || die "Can't open $ARGV[0] file: $!\n";
+while(<COMMANDS>){
+    my @line = split;
+    my $command = shift @line;
+    my $type = shift @line;
+    my @coordinates = read_coordinates(@line);
+    if($command eq "create" ){
+        if($type =~ /Rectangle|Triangle|Square|Circle/){
+            #TODO handle exception here
+            #my $figure = eval{$type->new(coordinates => \@coordinates)} or do {
+            #    print STDERR $@;
+            #    next;
+            #} 
+            #print Dumper \$figure;
+            my $figure = $type->new(coordinates => \@coordinates);
+            $figure->draw;
+            my $area = $figure->area;
+            say "The area of the $type is $area";
+        }else{
+            print STDERR "The figure type: {$type} not exist. \n";
+        }
+    }
+    else{
+        print STDERR "The command {$command} not exist.\n";
+    }
+}
+
