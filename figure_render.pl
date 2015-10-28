@@ -206,6 +206,12 @@ sub draw {
 1;
 package main;
 use Data::Dumper;
+use DBI;
+my $database = "figures";
+my $hostname = "localhost";
+my $port = 3306;
+my $dsn = "DBI:mysql:database=$database;host=$hostname;port=$port";
+my $dbh = DBI->connect($dsn,"root","");
 
 sub read_coordinates {
    my @coordinates;
@@ -216,16 +222,50 @@ sub read_coordinates {
    return @coordinates;
 }
 
+sub persist {
+     my $type = shift;
+     $dbh->do("INSERT INTO figure (figure_type) VALUES (?)", undef, $type);
+     my $last_id = $dbh->last_insert_id(undef, undef, "figure", "figure_id");
+     foreach my  $point (@_) {
+         my @params = ($point->{"x"},$point->{"y"},$last_id);
+         $dbh->do("INSERT INTO point (point_x, point_y,figure_id) VALUES (?,?,?)", undef,@params);
+      }
+}
+sub print_figure_by_type {
+    my $type = shift;
+    my $query = "SELECT * FROM figure INNER JOIN point ON point.figure_id = figure.figure_id WHERE figure_type = ?";
+    my $sth = $dbh->prepare($query);
+    $sth->execute($type);
+    my $last_id = -1;
+    my $p = 1;
+    say "######################## FIGURES LIST BY TYPE: $type ##########################";
+    while(my @row = $sth->fetchrow_array){
+        my $id = shift @row;
+        if($last_id == $id){
+           say "P$p x:".$row[2]. " y:".$row[3];
+           $p++;
+        }
+        else{
+            $p = 1;
+            $last_id= $id;
+            say $id . " " . $row[0];
+            say "P$p x:".$row[2]. " y:".$row[3];
+            $p++;
+        }
+    }
+    say "################################################################################";
+
+}
 
 open("COMMANDS","<:utf8", $ARGV[0]) || die "Can't open $ARGV[0] file: $!\n";
 while(<COMMANDS>){
     my @line = split;
     my $command = shift @line;
     my $type = shift @line;
-    my @coordinates = read_coordinates(@line);
     if($command eq "create" ){
         if($type =~ /Rectangle|Triangle|Square|Circle/){
-            #TODO handle exception here
+             my @coordinates = read_coordinates(@line);
+            #TODO catch exception here
             #my $figure = eval{$type->new(coordinates => \@coordinates)} or do {
             #    print STDERR $@;
             #    next;
@@ -235,10 +275,16 @@ while(<COMMANDS>){
             $figure->draw;
             my $area = $figure->area;
             say "The area of the $type is $area";
+            persist($type,@coordinates);
         }else{
             print STDERR "The figure type: {$type} not exist. \n";
         }
-    }
+    }elsif($command eq "list" ){
+        print print_figure_by_type($type);
+            #for my @f @figures){
+            #    print "ID: " . $f[0] . "| TYPE: " . $f[1] . "\n";
+            #}
+    }    
     else{
         print STDERR "The command {$command} not exist.\n";
     }

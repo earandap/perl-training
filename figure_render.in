@@ -4,3 +4,5 @@ create Circle 3,0 3,3
 create Square 0,0 0,4 4,4 4,0
 create asdona 0,0 0,5
 draw Triangle 0,0 0,5
+list Triangle
+list Square
