@@ -224,12 +224,14 @@ sub read_coordinates {
 
 sub persist {
      my $type = shift;
+     #TODO begin transaction
      $dbh->do("INSERT INTO figure (figure_type) VALUES (?)", undef, $type);
      my $last_id = $dbh->last_insert_id(undef, undef, "figure", "figure_id");
      foreach my  $point (@_) {
          my @params = ($point->{"x"},$point->{"y"},$last_id);
          $dbh->do("INSERT INTO point (point_x, point_y,figure_id) VALUES (?,?,?)", undef,@params);
       }
+     #TODO commit transaction
 }
 sub print_figure_by_type {
     my $type = shift;
@@ -290,3 +292,4 @@ while(<COMMANDS>){
     }
 }
 
+$dbh->disconnect;
