@@ -207,9 +207,11 @@ sub draw {
 package main;
 use Data::Dumper;
 use DBI;
+use Try::Tiny;
+
 my $database = "figures";
 my $hostname = "localhost";
-my $port = 3306
+my $port = 3306;
 my $dsn = "DBI:mysql:database=$database;host=$hostname;port=$port";
 my $dbh = DBI->connect($dsn,"root","") or die "Unable to connect: $DBI::errstr\n";
 
@@ -259,33 +261,31 @@ sub print_figure_by_type {
 
 }
 
-open("COMMANDS","<:utf8", $ARGV[0]) || die "Can't open $ARGV[0] file: $!\n";
+if(!$ARGV){
+    say "Missing argument with the file path of input";
+}
+open("COMMANDS","<:utf8", $ARGV[0]) or  die "Can't open $ARGV[0] file: $!\n";
 while(<COMMANDS>){
     my @line = split;
     my $command = shift @line;
     my $type = shift @line;
     if($command eq "create" ){
         if($type =~ /Rectangle|Triangle|Square|Circle/){
-             my @coordinates = read_coordinates(@line);
-            #TODO catch exception here
-            #my $figure = eval{$type->new(coordinates => \@coordinates)} or do {
-            #    print STDERR $@;
-            #    next;
-            #} 
-            #print Dumper \$figure;
-            my $figure = $type->new(coordinates => \@coordinates);
-            $figure->draw;
-            my $area = $figure->area;
-            say "The area of the $type is $area";
-            persist($type,@coordinates);
+            my @coordinates = read_coordinates(@line);
+            try{
+                my $figure = $type->new(coordinates => \@coordinates);
+                $figure->draw;
+                my $area = $figure->area;
+                say "The area of the $type is $area";
+                persist($type,@coordinates);
+            }catch {
+                warn "caught error: $_";
+            }
         }else{
             print STDERR "The figure type: {$type} not exist. \n";
         }
     }elsif($command eq "list" ){
         print print_figure_by_type($type);
-            #for my @f @figures){
-            #    print "ID: " . $f[0] . "| TYPE: " . $f[1] . "\n";
-            #}
     }    
     else{
         print STDERR "The command {$command} not exist.\n";
