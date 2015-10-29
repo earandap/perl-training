@@ -209,9 +209,9 @@ use Data::Dumper;
 use DBI;
 my $database = "figures";
 my $hostname = "localhost";
-my $port = 3306;
+my $port = 3306
 my $dsn = "DBI:mysql:database=$database;host=$hostname;port=$port";
-my $dbh = DBI->connect($dsn,"root","");
+my $dbh = DBI->connect($dsn,"root","") or die "Unable to connect: $DBI::errstr\n";
 
 sub read_coordinates {
    my @coordinates;
